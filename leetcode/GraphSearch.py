@@ -7,6 +7,13 @@ class Graph():
         self.V = V
         self.graph = [[0 for column in range(V)] \
                                 for row in range(V)]
+
+
+class GraphNode():
+    def __init__(self):
+        self.val = None
+        self.neighbors = None
+
 # BFS1 : BiPartie using queue
 # def bipartie(myGraph):
 
@@ -306,6 +313,64 @@ def coin_combination(target,coins):
     return final_result
 
 
+def copy_graph_bfs(node):
+    """
+    given a fully connected graph
+    using bfs to copy the node
+    expand node, generate its neighbors
+    fit for the graph that is deep not wide (so dfs is more likely to overflow than bfs)
+    for each generated node, if not exist in visited queue/hashmap, add to queue and add to hashmap
+
+    """
+    if node is None:
+        return
+    mydict = {}
+    myqueue = deque([])
+    myqueue.append(node)
+    while len(myqueue) > 0:
+        cur_node = myqueue.popleft()
+        if cur_node not in mydict: # cur node hasn't been copied yet
+            cur_node_copy = GraphNode()
+            cur_node_copy.val = cur_node.val
+            cur_node_copy.neighbors = cur_node.neighbors
+            mydict[cur_node] = cur_node_copy
+            for neighbor_node in cur_node.neighbors:
+                myqueue.append(neighbor_node)
+        else:
+            continue
+    return mydict.values()[0]
+
+
+def copy_graph_dfs(node,lookup):
+    """
+    given a fully connected graph
+    using dfs to copy the node
+    using recursion
+    fit for the graph that is wide not deep (so bfs is more likely to overflow than dfs)
+    :return:
+    """
+    if node is None:
+        return
+    if node in lookup:
+        return lookup[node]
+    copy_node = GraphNode()
+    copy_node.val = node.val
+    lookup[node] = copy_node
+    for neighbor in node.neighbors:
+        copy_node.neighbor.append(copy_graph_dfs(neighbor,lookup))
+    return copy_node
+
 
 if __name__ == "__main__":
     myCostMat = [[0,1,0,0,1,0],[1,0,1,0,1,0],[0,1,0,1,0,0],[0,0,1,0,10,1],[0,0,0,1,0,0]]
+    root = GraphNode()
+    node1 = GraphNode()
+    node2 = GraphNode()
+
+    root.val = 0
+    node1.val = 1
+    node2.val = 2
+    root.neighbors = [node1]
+    node1.neighbors = [node2]
+    node2.neighbors = [root]
+    print("test copy_graph_bfs", copy_graph_bfs(root))

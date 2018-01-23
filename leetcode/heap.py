@@ -54,6 +54,34 @@ def merge_k_sorted_list(listOflist):
     return result
 
 
+def merge_k_sorted_list_equalSize(kList):
+    """
+    input: list of list, there are k sorted sublist with each one has n element
+    output: one big list of sorted n*k element
+    """
+    # construct the original minheap
+    k = len(kList)
+    n = len(kList[0])
+    minheap = []
+    for i in range(k):
+        minheap.append((kList[i][0],(i,0)))
+    heapq.heapify(minheap)
+    print minheap
+    final = [0 for i in range(k*n)]
+    # start iteration
+    for idx in range(k*n):
+        cur = heapq.heappop(minheap)
+        print cur
+        final[idx] = cur[0]
+        cur_list_idx = cur[1][0] # which list we take
+        cur_val_idx = cur[1][1] # which val we take
+        if cur_val_idx < n - 1:
+            heapq.heappush(minheap,(kList[cur_list_idx][cur_val_idx + 1],(cur_list_idx,cur_val_idx + 1)))
+        else:
+            continue
+    return final
+
+
 if __name__ == "__main__":
     curList = [3,1,1,2,2,3,3,4,5]
     nestedList = [[1,2,3],[4,5,6],[7,8,9]]

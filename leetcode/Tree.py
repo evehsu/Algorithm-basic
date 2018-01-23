@@ -385,6 +385,53 @@ def find_max_diff_size(root):
     get_size(root,global_max_diff,soluNode)
     return soluNode[0]
 
+
+def find_a_closest_node(root,target):
+    """
+    given a bst, decide whether the target is exist in the node
+    :param root:
+    :param target:
+    :return:
+    """
+    if root is None:
+        return root
+    result = root.data
+
+    while root is not None:
+        if root.data == target:
+            return root.data
+        else:
+            if abs(root.data - target) < abs(result - target):
+                result = root.data
+
+            if root.data > target:
+                root = root.left
+            else:
+                root = root.right
+    return result
+
+
+def find_largest_smaller_than_target(root,target):
+
+    """
+    give a bst and a target, among the smaller ones , find the closest to target
+    :param root:
+    :return:
+    """
+    if root is None:
+        return root
+
+    result = 0
+    while root is not None:
+        if root.data >= target:
+            root = root.left
+        else: # if cur node < target, then the right most leaf node has the largest value
+            result = root.data
+            root = root.right
+    return result
+
+
+
 if __name__ == "__main__":
 
     root = Tree()

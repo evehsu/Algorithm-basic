@@ -392,6 +392,89 @@ def min_cut_palindome(myStr):
     return m[-1]
 
 
+def min_cut_wood(cutpoint):
+    """
+    given a piece of wood (length is known) and a series cutting point
+    and the cutting cost is decided by the length
+    find the cutting order of minimum cost
+    the cutpoint would be given as [0,x,x,...len(cutpoint)]
+
+    because cost for each position is not identical, so using dp on the original given array (if wood length is 10,
+    the original given array is [0:10] is not working, so linear scan is not working
+
+    we need to think a framework that save the result of minimum cost of each cutting point
+    so if given a cutting point is 2,4,7, and length 10
+    we could have an array of [0,2,4,7,10]
+    we need to find the min cost of [0,2],[0,4]...[2,4],[2,7],[2,10]...[7,10
+    as when we looking for cutting [2,10], we could use [2,7] + [7,10] , or [2,4] + [4,10], it is meaningful to save the
+    intermediate result
+
+    therefore, we design m[i][j] referring to the mincost of cutting array from ith to jth position of the given current
+    array
+
+    :param cutpoint:
+    :param woodLength:
+    :return: the min cost
+    """
+    m = [[0 for p in range(0,len(cutpoint))] for q in range(0,len(cutpoint))]
+    gapdict = {}
+    for i in range(len(m)):
+        for j in range(i + 1,len(m[0])):
+            # gap between i.j is [0:len(m)], which is 0,1,2,...len(m) - 1
+            if j - i in gapdict:
+                gapdict[j-i].append((i,j))
+            else:
+                gapdict[j-i] = [(i,j)]
+    for key in gapdict.keys(): # iterate through gap(keys in gapdict) will guarantee that we fill the m in a diagonal way
+        for pair in gapdict[key]:
+            i = pair[0]
+            j = pair[1]
+            if j - i == 1:
+                continue
+            else:
+                inter = float("inf")
+                for t in range(i+1,j):
+                    inter = min(inter,m[i][t] + m[t][j])
+                m[i][j] = cutpoint[j] - cutpoint[i] + inter
+    return m[0][len(m) - 1]
+
+
+def mergeStone(stoneList):
+    """
+    given a stone list(each number means the size of stone) , we want to merge stone with its neighbor till there is
+    only one stone, the cost of the merging is the size of the merged stones
+    say if we merge stones of size 5 and size 8, merging these 2 stones will have a cost of
+    :param stoneList:
+    :return:min cost of merge those stones
+    this problem is similar with cutting wood for
+    1. minimum element(un splittable) cost is different (wood is lenght, while stone is size), which is to say the weight
+    is different. Therefore linear scan is not working because the result is different for different approaches
+    2. but we could also build a cost matrix to save the result
+    in cutting wood, m[i][j] is min cost in cutting the wood from ith cutting point to the jth cutting point position
+    (when cost is cuttingpoint[j] - cuttingpoint[i])
+    in merging stone, the stonelist is the cuttingpoint, m[i][j] means min cost of merging the ith stone to the jth stone
+    """
+    m = [[0 for p in range(0,len(stoneList))] for q in range(0,len(stoneList))]
+    gapdict = {}
+    for i in range(len(m)):
+        for j in range(i + 1,len(m[0])):
+            # gap between i.j is [0:len(m)], which is 0,1,2,...len(m) - 1
+            if j - i in gapdict:
+                gapdict[j-i].append((i,j))
+            else:
+                gapdict[j-i] = [(i,j)]
+    for key in gapdict.keys(): # iterate through gap(keys in gapdict) will guarantee that we fill the m in a diagonal way
+        for pair in gapdict[key]:
+            i = pair[0]
+            j = pair[1]
+            if j - i == 1:
+                m[i][j] = stoneList[i] + stoneList[j]
+            else:
+                inter = float("inf")
+                for t in range(i,j):
+                    inter = min(inter,m[i][t] + m[t+1][j])
+                m[i][j] = sum(stoneList[i:j+1]) + inter
+    return m[0][len(m)-1]
 
 if __name__ == "__main__":
     testList = [2,4,3,6,9,10,4]

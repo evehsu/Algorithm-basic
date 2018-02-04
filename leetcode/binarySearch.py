@@ -72,6 +72,23 @@ def find_first_occur(mylist,target):
         return -1
 
 
+def find_sqrt(x, accur):
+    """
+    find the sqrt root of x (positive integer), which abs(sqrt ^ 2 - x) is less than accur
+    :param x:
+    :return:
+    """
+    if x < 0:
+        return
+    left = 0
+    right = x
+    while abs(pow((left + right)/2.0,2) - x) > accur:
+        mid = (left + right)/2.0
+        if pow(mid,2) - x < 0:
+            left = mid
+        else:
+            right = mid
+    return (left + right)/2.0
 
 if __name__ == "__main__":
     tmplist = [1,1,2,3,4,5,6,9]

@@ -14,7 +14,10 @@ class Tree(object):
         self.left = None
         self.right = None
         self.data = None
+"""
+Tree Treversal general
 
+"""
 def preOrder(myTree):
     """
     time O(N), n is the number of nodes
@@ -102,6 +105,131 @@ def postOrder(myTree):
     print myTree.data
 
 
+"""
+Tree Traversal special path
+leaf-to-leaf
+root-to-leaf
+any-2-node
+"""
+def leaf_to_leaf_max(root):
+    """
+    midterm 2
+    :param root:
+    :return:
+    get from child: left max path , right max path
+    current: max(left, right) + curNode.data
+    report to parent: max(left, right) + curNode.data
+    trick as it requires leaf to leaf: global_max could only be updated when the current node
+    has both left or right child
+    """
+    global_max = [-float("inf")]
+    def helper(root, global_max):
+
+        if root is None:
+            return 0
+        max_left = helper(root.left)
+        max_right = helper(root.right)
+        if root.left is not None and root.right is not None: # this is the trick
+            if max_left + max_right + root.data > global_max:
+                global_max[0] = max_left + max_right + root.data
+            return max(max_left, max_right) + root.data
+        if root.left is None:
+            return max_right + root.data
+        if root.right is None:
+            return max_left + root.data
+    helper(root,global_max)
+    return global_max[0]
+
+
+def any_to_any(root):
+    """
+    find the maximum sum path from any to any (not required to be leaf node)
+    difference with leaf to leaf is that we could set sum to 0 for some node if its left sum and right sum < 0
+     which is disregard the below nodes (start from the current node)
+    :param root:
+    :return:
+    """
+    global_max = [-float("inf")]
+
+    def helper(root, global_max):
+        if root is None:
+            return 0
+        left = max(0,helper(root.left,global_max))
+        right = max(0,helper(root.right,global_max))
+        global_max[0] = max(left + right + root.data,global_max[0])
+        return max(left, right) + root.data
+    helper(root, global_max)
+    return global_max[0]
+
+
+def leaf_to_root(root):
+    """
+    find the maxisum of path where is leaf to root (each level pick one node)
+    difference with leaf_to_leaf and any_to_any, the global_max would be possibly updated only we found the sum from root-leaf
+    instead of every recursion level
+    therefore, only from top to bottom one direction(once touch the leaf node, stop recursion) would be fine, while drill down
+    keep the record of prefix sum
+    it pass value from top - bottom, so no need to take value from child node, when meet leaf node, return
+    cur level: add value
+    report to parent: none
+    :param root:
+    :return:
+    """
+    global_max = [-float("inf")]
+    prefix = 0
+    def helper(root, global_max,prefix):
+        if root is None:
+            return
+        prefix += root.data
+        if root.left is None and root.right is None:
+            # now is leaf node , should check global_max
+            global_max[0] = max(global_max[0],prefix)
+            return
+        helper(root.left, global_max, prefix)
+        helper(root.right, global_max,prefix)
+    helper(root, global_max,prefix)
+    return global_max[0]
+
+
+def leaf_to_root_any_to_any_find_target(root,target):
+    """
+    determine whether there are a path(any to any) on the root to one of the leaf node that could sum to target
+    use a set to save the prefix_sum,which is root to the current node sum. for new prefix_sum, if target - prefix_sum
+    exist in the set, then the target path is found, otherwise addin to the set
+    :param root:
+    :return:
+    """
+    def helper(root,prefix_sum,prefix_sum_set,target):
+        if root is None:
+            return False
+        prefix_sum += root.data
+        if prefix_sum - target in prefix_sum_set:
+            return True
+        else:
+            prefix_sum_set.add(prefix_sum)
+            exist_in_left = helper(root.left, prefix_sum,prefix_sum_set,target)
+            exist_in_right = helper(root.right, prefix_sum,prefix_sum_set,target)
+            return exist_in_left or exist_in_right
+
+    return helper(root,0,set([0]),target)
+
+
+def leaf_to_root_any_to_any_maxPath(root):
+
+    global_max = [-float("inf")]
+
+
+    def helper(root, global_max):
+        if root is None:
+            return 0
+        left = helper(root.left, global_max)
+        right = helper(root.right,global_max)
+        cur = max(max(left, right),0) + root.data # we could start with cur node if its child sum < 0
+        global_max[0] = max(cur, global_max[0])
+        return cur
+    helper(root,global_max)
+    return global_max[0]
+
 def getHeight(root):
     """
     get from child: height of left child, height of right child
@@ -127,6 +255,33 @@ def isBalanced(myTree):
     if abs(leftHeight - rightHeight) > 1:
         return False
     return isBalanced(myTree.left) and isBalanced(myTree.right)
+
+def isBalanced_optimize(root):
+    """
+    use 3 steps to make the time complexity in o(N)
+    get from left child/right child, child tree height
+    current: add 1 to the height, if left height - right height  is larget than 1, return -1
+    report to parent: height
+
+    :param root:
+    :return:
+    """
+    def getHeight_v2(root):
+        if root is None:
+            return 0
+        left_height = getHeight_v2(root.left)
+        right_height = getHeight_v2(root.right)
+        if left_height == -1 or right_height == -1 or abs(left_height - right_height) > 1:
+            return -1
+        else:
+            return max(left_height,right_height) + 1
+    if root is None:
+        return True
+    if getHeight_v2(root) > 0:
+        return True
+    else:
+        return False
+
 
 
 def isBST(myTree):

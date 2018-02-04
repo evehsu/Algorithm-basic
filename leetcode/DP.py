@@ -476,6 +476,30 @@ def mergeStone(stoneList):
                 m[i][j] = sum(stoneList[i:j+1]) + inter
     return m[0][len(m)-1]
 
+
+def isPartition(myArr):
+    """
+    given the array return true if the array could be divided into 2 parts where these 2 parts have equal sum
+    :param
+    :return:
+    so dp[i] is number i could find through some subset, and finally return dp[target] where target = sum(arr)/2
+    dp[j] = dp[j - num] for num in array
+
+    time complexity: n * n (2 level for loops)
+    """
+    mysum = sum(myArr)
+    if mysum & 1: return False # if sum is odd return false
+    target = mysum/2
+    dp = [False] * (target + 1)
+    dp[0] = True
+    for num in myArr:
+        for j in range(target, num - 1, -1):
+            dp[j] = dp[j] or dp[j - num]
+    return dp[target]
+
+
+
+
 if __name__ == "__main__":
     testList = [2,4,3,6,9,10,4]
     testList2 = [2]

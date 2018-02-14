@@ -90,6 +90,10 @@ def find_sqrt(x, accur):
             right = mid
     return (left + right)/2.0
 
+"""
+
+"""
+
 if __name__ == "__main__":
     tmplist = [1,1,2,3,4,5,6,9]
     k = 1

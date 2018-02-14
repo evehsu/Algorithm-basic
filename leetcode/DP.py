@@ -498,7 +498,39 @@ def isPartition(myArr):
     return dp[target]
 
 
-
+def min_cut_of_array(mylist,limit):
+    """
+    given an array, try to find the min # of cut that each piece's sum of cut is smaller than limit
+    we could still use zuo da duan you xiao duan
+    as for every right part, we could directly check whether the sum of right part < 10
+    m[0] = 0 if mylist[0] < limit otherwise m[i] = None
+    m[i] = min (m[i-1] + 1, if mylist[i] < limit,None is mylist[i] > limit,
+                m[i-2] + 1, if mylist[i-1:i+1] < limit,None is sum(mylist[i-1:i+1]) > limit,
+                .
+                .
+                .)
+    return m[-1]
+    :param mylist:
+    :return:
+    """
+    if len(mylist) < 1:
+        return None
+    m = [0] * len(mylist)
+    m[0] = 0 if mylist[0] < limit else None
+    for i in range(1,len(mylist)):
+        if sum(mylist[:i + 1]) < limit:
+            m[i] = 0
+            continue
+        tmp = []
+        for j in range(i-1,-1,-1):
+            cur = m[j] + 1 if m[j] is not None and sum(mylist[j+1:i + 1]) < limit else None
+            if cur is not None:
+                tmp.append(cur)
+        if len(tmp) == 0:
+            m[i] = None
+        else:
+            m[i] = min(tmp)
+    return m[-1]
 
 if __name__ == "__main__":
     testList = [2,4,3,6,9,10,4]

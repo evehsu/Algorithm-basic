@@ -586,6 +586,76 @@ def find_largest_smaller_than_target(root,target):
     return result
 
 
+"""
+Tree Serialization & De-serialization
+for de-serialization, we need pre/post order and inoder (in order is a must as we need to ise the root and find it in
+in order sequence so that we know which nodes is in left tree and which is in right tree)
+"""
+
+
+def build_tree_preorder_inorder(prelist,inlist):
+    """
+    given two sequence of preorder and inorder,
+    1. we need to find the root (1st elememtn in prdorder) in in order
+    then we know element ahead of root in inorder list is left tree and after is right tree
+    2.recursively: we use left element to construct left tree and right elelment to construct right tree
+    3. base case: no remain element for constructing tree
+    preleft: preleft + 1 to preleft + lefttree size is left tree element
+    preright: preleft + lefttree sie + 1 to preright is right tree element
+    inleft:inleft to inleft + lefttree size - 1 is left tree elememt
+    inright: inright
+    """
+    def build_map(mylist):
+        mydict = {}
+        for i in range(len(mylist)):
+            mydict[mylist[i]] = i
+        return mydict
+
+
+    def construct(prelist,preleft,preright,inlist, inleft, inright,idxmap):
+        # base case
+        if (inleft > inright):
+            return None
+        root = Tree()
+        root.data = prelist[preleft]
+        leftsize = idxmap[root.data] - inleft
+        root.left = construct(prelist, inlist, preleft + 1, preleft + leftsize,inleft,inleft + leftsize - 1)
+        root.right = construct(prelist, inlist,preleft + leftsize + 1, preright, inleft + leftsize + 1, inright)
+        return root
+    mymap = build_map(inlist)
+    return construct(prelist, inlist,0,len(prelist) - 1,0,len(inlist) - 1, mymap)
+
+
+def build_tree_levelOrder_inorder(levellist,inlist):
+    def build_map(mylist):
+        mydict = {}
+        for i in range(len(mylist)):
+            mydict[mylist[i]] = i
+        return mydict
+
+
+    def construct(levellist,inlist,inleft,inright,mapidx):
+        if inleft > inright
+            return None
+        root = Tree()
+        root.data = levellist[0]
+        root_idx = mapidx[root.data]
+        levelleft = []
+        levelright = []
+        for item in levellist:
+            if mapidx[item] > root_idx:
+                levelright.append(mapidx[item])
+            elif mapidx[item] < root_idx:
+                levelleft.append(mapidx[item])
+            else:
+                continue
+        root.left = construct(levelleft,inlist,inleft,root_idx-1,mapidx)
+        root.right = construct(levelright,inlist,root_idx + 1,inright,mapidx)
+        return root
+
+    mydict = build_map(inlist)
+    return construct(levellist,inlist,0,len(inlist) - 1,mydict)
+
 
 if __name__ == "__main__":
 

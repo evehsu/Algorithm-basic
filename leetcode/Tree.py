@@ -130,7 +130,7 @@ def leaf_to_leaf_max(root):
         max_left = helper(root.left)
         max_right = helper(root.right)
         if root.left is not None and root.right is not None: # this is the trick
-            if max_left + max_right + root.data > global_max:
+            if max_left + max_right + root.data > global_max[0]:
                 global_max[0] = max_left + max_right + root.data
             return max(max_left, max_right) + root.data
         if root.left is None:
@@ -139,6 +139,8 @@ def leaf_to_leaf_max(root):
             return max_left + root.data
     helper(root,global_max)
     return global_max[0]
+
+
 
 
 def any_to_any(root):

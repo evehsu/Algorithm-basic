@@ -140,7 +140,7 @@ def move_0_to_end(mylist):
             mylist[slow] = mylist[fast]
             fast += 1
             slow += 1
-    mylist[slow:] = 0
+    mylist[slow:] = [0] * (len(mylist) - slow)
     return mylist
 
 

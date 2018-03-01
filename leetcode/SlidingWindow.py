@@ -27,6 +27,8 @@ def sliding_window_max_heap(mylist,window):
     using heap so time complexity would be O(n*log(window))
     time:  O(2n) + O(2nlog(window) = O(nlog(window))
     space o(n)
+    THIS SOLUTION IS WRONG
+    AS HEAP IN PYTHON COULDN'T LOCATE ELEMENT BY VALUE  , SO ELEMENT OUT OF WINDOW MAY STILL EXIST IN THE HEAP
     """
     if len(mylist) < window:
         print("length of given list is shorter than window")

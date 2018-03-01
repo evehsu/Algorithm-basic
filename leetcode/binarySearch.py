@@ -53,6 +53,41 @@ def find_target_or_closest(mylist,target):
         print ("closest number to target ", target," is at position ", right)
     return
 
+
+def find_closest_k_to_target(mylist,target,k):
+    """
+    given a list and a target, print out the closest k element that are closest to the target
+    1.apply binary search to find target or cloest :time o(logn)
+    2. compare left and right, moves the one whose gap is smaller : time o(k)
+    total time o(logn + k)
+    3 optional: the step2 could be optimized to logk, by the approach in the below find_kth_smallest_2_sorted_list
+
+    :param mylist:
+    :param target:
+    :return:
+    """
+    # find closest target
+    if len(mylist) < 1:
+        return
+    left = 0
+    right = len(mylist) - 1
+    while left < right - 1:
+        mid = (left + right)/2
+        if target <= mylist[mid]:
+            right = mid
+        else:
+            left = mid
+    while k > 0:
+        if abs(mylist[left] - target) < abs(mylist[right] - target):
+            print mylist[left]
+            left -= 1
+        else:
+            print mylist[right]
+            right += 1
+        k -= 1
+    return
+
+
 def find_first_occur(mylist,target):
     # return the index of first occurance of target and otherwise return -1
     left = 0
@@ -90,7 +125,34 @@ def find_sqrt(x, accur):
             right = mid
     return (left + right)/2.0
 
-"""
+
+def find_kth_smallest_2_sorted_list(list1,list2,k):
+    """
+    given 2 sorted list, find kth smallest using logk time (rather than k,shui xiao yi shui)
+    compared list1[k/2] and list2[k/2], if list1[k/2] < list2[k/2], it's safe to delete k/2 elements from list1
+    in the next iteration, check k/4, until k/XX == 1, now it only takes logk time
+    """
+    # assuming k < len(list1) + len(list2) - 1
+    def helper(list1, list2, idx1,idx2, k):
+        # base case
+        if idx1 >= len(list1):
+            return list2[idx2 + k -1]
+        if idx2 >= len(list2):
+            return list1[idx1 + k - 1]
+        if k == 1:
+            return min(list1[idx1],list2[idx2])
+        # recursion rule
+        # k < len(list1[idx1:] + len(list2[idx2:] - 1
+        if idx1 + k/2 - 1 > len(list1):
+            helper(list1,list2,idx1,idx2 + k/2 - 1,k - k/2)
+        elif idx2 + k/2 - 1 > len(list2):
+            helper(list1,list2,idx1 + k/2 - 1,k - k/2)
+        else:
+            if list1[idx1 + k/2 - 1] < list2[idx2 +k/2 - 1]:
+                helper(list1,list2,idx1 + k/2 -1, idx2, k/2 - 1)
+            else:
+                helper(list1,list2,idx1, idx2 + k/2 -1, k/2 - 1)
+    return helper(list1,list2,0,0,k)
 
 """
 

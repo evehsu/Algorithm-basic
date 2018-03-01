@@ -139,7 +139,53 @@ def two_sum(mylist,target):
     return result
 
 
+# nodup, save space
+def two_sum_nodup_save_space1(mylist,target):
+	sort_list = merge_sort(mylist)
+	i = 0
+	j = len(sort_list) - 1
+	while i < j:
+		if sort_list[i] + sort_list[j] == target:
+			return True
+		elif sort_list[i] + sort_list[j] < target:
+			i += 1
+		else:
+			j -= 1
+	return False
 
+def two_sum_nodup_save_space2(mylist,target):
+	sort_list = merge_sort(mylist)
+	i = 0
+	j = len(sort_list) - 1
+	result = []
+	while i < j:
+		if sort_list[i] + sort_list[j] == target:
+			result.append([i,j])
+		elif sort_list[i] + sort_list[j] < target:
+			i += 1
+		else:
+			j -= 1
+	return result
+
+def two_sum_nodup_savetime(mylist,target):
+	"""
+	save time and cost space: using dictionary
+	don't need to sort
+	"""
+	mydict = {}
+	for i in range(0,len(mylist)):
+		item = mylist[i]
+		if item in mydict:
+			mydict[item].append(i)
+		else:
+			mydict[item] = [i]
+
+	result = []
+	for key in mydict:
+		tmp = target - key
+		if tmp in mydict and tmp != key:
+			result.append([mydict[key],mydict[tmp]])
+	return result
 
 
 if __name__ == "__main__":

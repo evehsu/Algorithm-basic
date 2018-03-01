@@ -94,25 +94,36 @@ def bestBuyStock_twice_optimize(mylist):
     return final[-1]
 
 
-def longest_ascending_array(mylist):
-    # use another array l to store what is the length of ascending array at cur position
-    l = [1] * len(mylist)
-    global_max = l[0]
-    for i in range(1,len(mylist)):
+def longest_ascending_subarray(mystr):
+    mylist = list(mystr)
+    global_max = 0
+    m = [1] * len(mylist)
+    for i in range(1,len(mystr)):
         if mylist[i] > mylist[i - 1]:
-            l[i] = l[i - 1] + 1
-            if l[i] > global_max:
-                global_max = l[i]
-        else:
-            l[i] = 1
-
+            m[i] = m[i - 1] + 1
+            global_max = max(global_max, m[i])
     return global_max
 
 
-def longest_ascending_subsequence(mylist):
+def longest_ascending_subarray_saveSpace(mystr):
+    mylist = list(mystr)
+    global_max = 1
+    cur = 1
+    for i in range(1,len(mystr)):
+        if mylist[i] > mylist[i - 1]:
+            follow = cur + 1
+            global_max = max(global_max, follow)
+            cur = follow
+        else:
+            cur = 1
+    return global_max
+
+
+def longest_ascending_subseq(mylist):
     """
     ascending subsequence is not continuous stored (difference with ascending subarray)
     [10, 9, 2, 5, 3, 7, 101, 18] => [2, 3, 7, 101]
+    2 nested for loop result in time complexity of O(n^2)
     :param mylist:
     :return: longest subsequence length
     """
@@ -129,6 +140,56 @@ def longest_ascending_subsequence(mylist):
             global_max = m[i]
     return global_max
 
+
+def longest_ascending_subseq_saveTime(mylist):
+    """
+    still solve longest scending subsequence,but
+    for the inner loop, using binary search , so total time is O(nlogn)
+    the trick is during scanning, we need to save <val,ascending_seq_len>, for given value,
+    what is the max ascending_seq_len so far containing this value
+    if there are two val share the same ascending_seq_len, <val1, ascending_seq_len> <val2,ascending_seq_len>
+    then we could disregard the larger value (say val2),because for future coming value, as long as it is greater than val1
+    it would have ascending_seq_len + 1 as the cur min ascending length
+    :param mylist:
+    :return:
+    """
+    def bs_left_closest(mylist,target):
+        """
+        return the index of the element which is cloest and smaller than target
+        :param mylist:
+        :param target:
+        :return:
+        """
+        if mylist[0] >= target:
+            return -1
+        if mylist[-1] < target:
+            return len(mylist) - 1
+        left = 0
+        right = len(mylist) - 1
+        while left < right - 1:
+            mid = (left + right)/2
+            if mylist[mid] >= target:
+                right = mid
+            if mylist[mid] < target:
+                left = mid
+        return left
+
+    cur_active = [mylist[0]] # active val in mylist that could decide the future asc seq length
+    cur_lgest_asc_seq = [1] # for each element in cur_active, what is the max ascending seq len
+
+    for i in range(1,len(mylist)):
+        # fit new coming element in cur_active by applying binary search
+        # by finding the cloest smaller element in cur_active
+        cur_pos = bs_left_closest(cur_active,mylist[i])
+        cur_pssbl_max_len = cur_lgest_asc_seq[cur_pos] + 1
+        print cur_active,cur_lgest_asc_seq,mylist[i],cur_pos,cur_pssbl_max_len
+
+        if cur_pos < len(cur_lgest_asc_seq) - 1:
+            cur_active[cur_pos + 1] = min(mylist[i],cur_active[cur_pos + 1])
+        else:
+            cur_active.append(mylist[i])
+            cur_lgest_asc_seq.append(cur_pssbl_max_len)
+    return cur_lgest_asc_seq[-1]
 
 def largest_sum(mylist):
     # create global_Max and max_ending_here
@@ -485,7 +546,7 @@ def isPartition(myArr):
     so dp[i] is number i could find through some subset, and finally return dp[target] where target = sum(arr)/2
     dp[j] = dp[j - num] for num in array
 
-    time complexity: n * n (2 level for loops)
+    time complexity: n * sum (2 level for loops)
     """
     mysum = sum(myArr)
     if mysum & 1: return False # if sum is odd return false
@@ -531,6 +592,59 @@ def min_cut_of_array(mylist,limit):
         else:
             m[i] = min(tmp)
     return m[-1]
+
+
+def pizza_picking_strategy(mylist):
+    """
+    given a list of integer represensts the size of the pieces of pizza
+    and you and your friend take turns to pick pizza from either the head or the tail
+    suppose your friend strategy is always taking the bigger one
+    what's your best strategy to take pizza in order to have larger size in total
+    assuming you start first
+
+    so example 1 5 100 10
+    in this case you should take 1 as the begining, then your friend will take 10,and you then take 100 and win
+    but if you take 10 first, your friend will take 100 and win
+
+    solution
+    using dp that m[i][j] is the largest total you could get from mylist[i:j+1], which is (i,j) inclusively
+    base case m[i][i]  = mylist[i]; m[i][i+1] = max(mylist[i],mylist[i + 1])
+    induction rule: m[i][j] = case 1: take left, if mylist[i+1] > mylist [j], m[i][j] = mylist[i] + m[i+2][j], else m[i][j] = mylist[i] + m[i+1][j-1]
+    case2: take right, if mylist[i] > mylist[j-1], m[i][j] = mylist[j] + m[i+1][j-1], else m[i][j] = mylist[j] + m[i][j-2]
+    m[i][j] = max(case1,case2)
+    fill m in an diagonal direction
+    m matrix is symmetric diagonally, so only need to fill right_top or left_bottom
+
+    :param mylist:
+    :return:
+    """
+    n = len(mylist)
+    m = [[0 for i in range(n)] for j in range(n)]
+    # build base case
+    for idx in range(n): # diff = 0
+        m[idx][idx] == mylist[idx]
+    for idx in range(1,n): # diff = 1
+        m[idx-1][idx] = max(mylist[idx - 1],mylist[idx])
+    # induction
+    for diff in range(2,n):
+        for i in range(0,n-diff):
+            # calculate m[i][j] where j = i + diff,  which m[i][i+diff]
+            # take left
+            j = i + diff
+            next_step_left = [0]
+            if mylist[i + 1] < mylist[j]:# friend will take mylist[j]
+                next_step_left[0] = m[i+1][j-1]
+            else:
+                next_step_left[0] = m[i+2][j]
+            # take right
+            next_step_right = [0]
+            if mylist[i] > mylist[j-1]:
+                next_step_right[0] = m[i+1][j-1]
+            else:
+                next_step_right[0] = m[i][j-2]
+            m[i][j] = max(mylist[i] + next_step_left[0],mylist[j] + next_step_right[0])
+
+    return m[0][n-1]
 
 if __name__ == "__main__":
     testList = [2,4,3,6,9,10,4]

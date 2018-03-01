@@ -319,12 +319,194 @@ def longest_unique(string):
         fast += 1
     return final_solution
 
+def find_1st_nonDup_char(myStr):
+    """
+    given a string, find the first non repeating string
+    for example: GeeksForGeeks: F: GeeksForMe: G
+    worst solution: 1. scan the string and save the count in a dict
+    2. scan the string a again, and look up into the dict , return the char when first time found count ==1
+    above is the worst solution because it needs to scan the array 2 twice
 
+    Better solution: 1. scan the string the save the count as well as the first position in a dict
+    so dict's key is char:(count,pos)
+    2. only scan the dict
+    it could save more time when the string has lot of dups, as it only need to scan the string once
+    :param myStr:
+    :return:
+    """
+    mylist = list(myStr)
+    dict = {}
+    for i in range(len(mylist)):
+        if mylist[i] in dict:
+            dict[mylist[i]][0] += 1
+        else:
+            dict[mylist[i]] = [1,i]
+    for k,v in dict.iteritems():
+        if v[0] == 1:
+            return k
+        else: continue
+    return -1
+
+
+def longest_common_prefix(listOfStr):
+    """
+    givena list of str, get the longest common prefix for those strs
+    :param
+    :return: the commom prefix str
+    solution: 1. find the shortest length of given strings, say the length is min_Len
+    2. for i in range(min_len): i iterate the chars in the min length string
+            for j in range(len(listOfStr0)): j index is the jth string we have
+
+            if come across something different, stop and return
+    """
+    listOflist = [list(x) for x in listOfStr]
+    min_len = float("inf")
+    for idx,item in enumerate(listOfStr):
+        min_len = min(min_len,len(item))
+    for i in range(min_len):
+        cur_char = listOflist[0][i]
+        for j in range(len(listOflist)):
+            if listOflist[j][i] != cur_char:
+                return listOflist[0][:i]
+    return listOflist[0][:min_len]
+
+
+def longest_common_substr(str1, str2):
+    """
+    different from longest common prefix, this requires the common substr not only from beginning(prefix)
+    but also from middle/end part
+    this requires 1. scan 2 array from beginning to end 2. save intermediate result
+    so dp : m[i][j] = common_substr between string1 cutting of by the ith string1[0:i] and string2 cutting of by jth string2[0:j],
+    base case m[0][0] = 1 if string1[0] ==  string2[0], otherwise 0
+    induction m[i][j] = m[i-1][j-1] + 1 if string1[i] = string2[j],otherwise 0 (because it is substring not subsequence),
+    which requires the common char need to be continuous, so once not continous, we need to restart (reset to 0)
+
+    finally scan over m and find the max
+
+    :param listOfstr:
+    :return:
+    """
+    list1 = list(str1)
+    list2 = list(str2)
+
+    # build basecase
+    m = [[0 for i in range(len(list1))] for j in range(len(list2))]
+    for i in range(len(m[0])):
+        if list1[i] == list2[0]:
+            m[0][i] = 1
+    for j in range(len(m)):
+        if list2[j] == list1[0]:
+            m[j][0] == 1
+    print m
+    # build induction rule
+    for i in range(1,len(m[0])):
+        for j in range(1,len(m)):
+            if list1[i] == list2[j]:
+                m[j][i] = m[j-1][i-1] + 1
+    print m
+    # find global_max
+    global_max = 0
+    for i in range(len(m[0])):
+        for j in range(len(m)):
+            global_max = max(global_max,m[j][i])
+
+    return global_max
+
+
+def longest_common_seq(str1,str2):
+    """
+    different from substr, now the common part is not required to be continuous, even though still require
+    to be in the same order. So we could modify the induction rule as
+    m[i][j] = m[i-1][j-1] + 1 if s1[i] = s2[j], otherwise max(m[i-1][j],m[i-1][j-1],m[i][j-1]), which is max(m[i-1][j],m[i][j-1])
+    :param str1:
+    :param str2:
+    :return:
+    """
+    list1 = list(str1)
+    list2 = list(str2)
+
+    m = [[0 for i in range(len(list1))] for j in range(len(list2))]
+    # base case
+    if list1[0] == list2[0]:
+        m[0][0] = 1
+    for i in range(1,len(m[0])):
+        if list1[i] == list2[0]:
+            m[0][i] = 1
+        else:
+            m[0][i] = m[0][i-1]
+    for j in range(1,len(m)):
+        if list2[j] == list1[0]:
+            m[j][0] = 1
+        else:
+            m[j][0] = m[j-1][0]
+
+    print m
+    # induction rule
+    for i in range(1,len(m[0])):
+        for j in range(1,len(m)):
+            if list1[i] == list2[j]:
+                m[j][i] = m[j-1][i-1] + 1
+            else:
+                m[j][i] = max(m[j-1][i],m[j][i-1])
+    print m
+    global_max = 0
+    for i in range(len(m[0])):
+        for j in range(len(m)):
+            global_max = max(global_max,m[j][i])
+
+    return global_max
+
+
+def first_nonrepeat_char(myStream):
+    """
+    given an unlimited stream of chars, report the first non repeat char at anytime using O(1)
+    use a dict and a queue
+    dict is used for saving the char and count
+    queue save the char as iteration from myStream ,queue[0] will be the answer
+    if we found queue[0] has freq > 1, then pop queue until queue[0] is freq == 1 again
+    :param myStream:
+    :return:
+    """
+    mydict = {}
+    myque = deque([])
+    for item in myStream:
+        if item in mydict:
+            mydict[item] += 1
+        else:
+            mydict[item] = 1
+        myque.append(item)
+        while myque and mydict[myque[0]] > 1:
+            myque.popleft()
+    return myque[0]
+
+def find_char_dup_overhalf(mylist):
+    """
+    given a list with duplicates, we know some unknown char is taking over a half of the list,
+    how to identify the unknown char?
+
+    maintain a pair of (candidate, counter), and iterate the list
+    when counter > 0
+    if new item != candidate, counter --, otherwise counter ++
+    when counter == 0, reset (candidate, counter)
+    :param mylist:
+    :return:
+    """
+    if len(mylist) < 2:
+        return
+    candidate = [mylist[0],1]
+    for i in range(1,len(mylist)):
+        if candidate[1] == 0:
+            candidate = [mylist[i],1]
+        elif candidate[0] != mylist[i]:
+            candidate[1] -= 1
+        else:
+            candidate[1] += 1
+    return candidate[0]
 
 
 if __name__ == "__main__":
     mystr1 = "   love   Is   Blind   "
     mystr2 = "stuudent"
     myChar = "u"
-    print(removeChar(mystr2,myChar))
+    print(remove_char(mystr2,myChar))
     print(removeNoUseSpace(mystr1))

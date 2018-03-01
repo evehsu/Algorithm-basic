@@ -7,58 +7,6 @@ def swap(mylist, a, b):
     mylist[b] = tmp
     return mylist
 
-def merge_sorted_list(list1,list2):
-
-    if(len(list1) == 0 or len(list2) == 0):
-        print('input error')
-        return;
-
-    i = 0
-    j = 0
-    k = 0
-    list_merge = [0]*(len(list1) + len(list2))
-    while(i < len(list1) and j < len(list2)):
-        if (list1[i] < list2[j]):
-            list_merge[k] = list1[i]
-            i += 1
-        else:
-            list_merge[k] = list2[j]
-            j += 1
-        k += 1
-    while(i < len(list1)):
-        list_merge[k] = list1[i]
-        i += 1
-        k += 1
-    while (j < len(list2)):
-        list_merge[k] = list2[j]
-        j += 1
-        k += 1
-    return(list_merge)
-
-def merge_sorted_list1(mylist,mid):
-
-    list1 = mylist[:mid]
-    list2 = mylist[mid:]
-    i = 0
-    j = 0
-    k = 0
-    while(i < len(list1) and j < len(list2)):
-        if (list1[i] < list2[j]):
-            mylist[k] = list1[i]
-            i += 1
-        else:
-            mylist[k] = list2[j]
-            j += 1
-        k += 1
-    while(i < len(list1)):
-        mylist[k] = list1[i]
-        i += 1
-        k += 1
-    while (j < len(list2)):
-        mylist[k] = list2[j]
-        j += 1
-        k += 1
-    return
 
 def selection_sort(mylist):
     # at each iteration, find the global minimum
@@ -71,21 +19,36 @@ def selection_sort(mylist):
     return mylist
 
 def merge_sort(mylist):
-    print("splitting ",mylist)
-    if (len(mylist) > 1):
+    if len(mylist) < 2:
+        return mylist
+    mid = len(mylist)/2
+    mylist[:mid] = merge_sort(mylist[:mid])
+    mylist[mid:] = merge_sort(mylist[mid:])
 
-        mid = len(mylist)/2
-        # merge_sort(mylist[:mid])
-        # merge_sort(mylist[mid:])
+    def merge_sorted_list(list1,list2):
+        result = [0] * (len(list1) + len(list2))
+        i = 0
+        j = 0
+        k = 0
+        while i < len(list1) and j < len(list2):
+            if list1[i] <= list2[j]:
+                result[k] = list1[i]
+                i += 1
+            else:
+                result[k] = list2[j]
+                j += 1
+            k += 1
+        while i < len(list1):
+            result[k] = list1[i]
+            k += 1
+            i += 1
+        while j < len(list2):
+            result[k] = list2[j]
+            k += 1
+            j += 1
+        return result
+    mylist = merge_sorted_list(mylist[:mid],mylist[mid:])
 
-        lefthalf = mylist[:mid]
-        righthalf = mylist[mid:]
-
-        merge_sort(lefthalf)
-        merge_sort(righthalf)
-
-        mylist[:] = merge_sorted_list(lefthalf,righthalf)
-        print("merging result ",mylist)
     return mylist
 
 def quick_sort(mylist):

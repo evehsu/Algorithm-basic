@@ -120,10 +120,10 @@ def kth_smallest_of_function(k):
 
     heap = [(get_val(x,y,z),(x,y,z))]
     heapq.heapify(heap)
-    result = [0]
+    result = 0
     while i < k:
         cur = heapq.heappop(heap)
-        result[0] = cur[0]
+        result = cur[0]
         cur_x = cur[1][0]
         cur_y = cur[1][1]
         cur_z = cur[1][2]
@@ -139,7 +139,7 @@ def kth_smallest_of_function(k):
             heapq.heappush(heap,(get_val(cur_x ,cur_y,cur_z + 1),(cur_x,cur_y,cur_z + 1)))
         i += 1
 
-    return result[0]
+    return result
 
 
 
@@ -203,6 +203,10 @@ def subset_of_dup_noHashMap(mylist):
     return all subset which each subset is unique
     compared with subset no dup
     the different with no dup one was if we came across some duplication, we need to skip them
+     they change is now the base case is curResult.len == k and level = len(mylist)(to avoid out of index)
+    note that in the helper function, we must recursive on add cur element first  and move level pointer,
+     and then recursive on not add in the cur element
+    if we switch the order, then it will not work
     """
     if len(mylist) < 1:
         return
@@ -228,7 +232,7 @@ def combination(mylist,k):
     """
     return a list of combination with k elements in the array
     still subset problem
-    they change is now the base case is curResult.len == k and level = len(mylist)(to avoid out of index)
+
     """
     if (len(mylist)) < k:
         return
@@ -246,6 +250,39 @@ def combination(mylist,k):
         curResult.pop()
 
     helper(mylist,0,[],result)
+    return result
+
+
+def comb_dup(mylist,k):
+    """
+    see the note on subset dup one
+    same logic here
+    :param mylist:
+    :param k:
+    :return:
+    """
+    if len(mylist) < k :
+        print 'invalid input'
+        return
+    result = []
+    def helper(mylist,level,k,curResult,result):
+        if len(curResult) == k:
+            result.append(list(curResult))
+            return
+        if level == len(mylist):
+            return
+
+
+        # add cur level element
+        curResult.append(mylist[level])
+        helper(mylist,level + 1, k, curResult,result)
+        while level < len(mylist) - 1 and curResult[-1] == mylist[level + 1]:
+            level += 1
+        curResult.pop()
+
+        # not add cur level element
+        helper(mylist,level + 1, k,curResult,result)
+    helper(mylist,0,k,[],result)
     return result
 
 
@@ -388,7 +425,90 @@ def valid_parenthesis_priority(n):
     return final_result
 
 
+def remove_invalid_parenthesis(mystr):
+    """
+    given a str of parenthesis, make it to valid string with minimum char removed
+    if the string is )()()) => ()()
+    (()())( => (()())(
+    step1: check if the str is valid or not : 1) at any level, num_left >= num_right 2) and the end: num_left == num_right
+    step2: note down the invalid number of left and right parenthesis (could be done in step1 )
+    step3: running dfs and prune for dup (for consecutive left/right, remove either of those would be the same)
 
+    :param str:
+    :return:
+    time complexity O(n + 2^n)
+    """
+    mylist = list(mystr)
+    # step1 and step2
+    l_count = 0
+    r_count = 0
+    r_invalid = 0
+    for i in range(0,len(mylist)):
+        if mylist[i] == "(":
+            l_count += 1
+        elif mylist[i] == ")":
+            r_count += 1
+        if r_count > l_count:
+            r_invalid += 1
+            r_count -= 1
+    l_invalid = l_count - r_count
+
+    # l_valid = l_count - l_invalid and r_valid = l_valid
+    # corr_len = l_valid + r_valid
+
+    def helper(mylist,level,l_invalid,r_invalid,left_open,curResult,result):
+        """
+
+        :param mylist: original list
+        :param level: index
+        :param l_invalid: # of invalid ( so far
+        :param r_invalid: # of invalid ) so far
+        :param left_open: # unmatched pairs
+        :param curResult:
+        :param result:
+        :return:
+        """
+        # base case 1: generate valid output
+        if level == len(mylist):
+            if l_invalid == 0 and r_invalid == 0 and left_open == 0:
+                result.append(list(curResult))
+                return
+            else:
+                return
+        # base case 2: prune
+        if l_invalid < 0 or r_invalid < 0 or left_open < 0:
+            return
+
+        # dfs
+        curChar = mylist[level]
+
+        # remove curchar
+        if curChar == "(":
+            helper(mylist, level + 1,l_invalid - 1,r_invalid,left_open,curResult,result)
+            while level < len(mylist) - 1 and mylist[level] == mylist[level + 1]:
+                level += 1
+        elif curChar == ")":
+            helper(mylist, level + 1,l_invalid,r_invalid - 1,left_open,curResult,result)
+            while level < len(mylist) - 1 and mylist[level] == mylist[level + 1]:
+                level += 1
+        else:# curchar is not parenthesis
+            curResult.append(curChar)
+            helper(mylist, level + 1,l_invalid,r_invalid,left_open,curResult,result)
+        # keep curchar
+        curResult.append(curChar)
+        if curChar == "(":
+            helper(mylist, level + 1,l_invalid,r_invalid,left_open + 1,curResult,result)
+        elif curChar == ")":
+            helper(mylist, level + 1,l_invalid,r_invalid,left_open - 1,curResult,result)
+        else:
+            helper(mylist, level + 1,l_invalid,r_invalid,left_open,curResult,result)
+        curResult.pop()
+    if l_invalid == 0 and r_invalid == 0:
+        return mystr
+    else:
+        result = []
+        helper(mylist,0,l_invalid,r_invalid,0,[],result)
+        return [''.join(x) for x in result]
 
 def valid_if_block(n):
     comb = []
@@ -543,9 +663,179 @@ def copy_graph_dfs(node,lookup):
     return copy_node
 
 
+"""
+Traverse a matrix problem
+# non- direction (# of island)
+# direction (maximum exchange of currency)
+
+"""
+def num_of_island(mymat):
+
+    can_explore = [[True for i in range(len(mymat[0]))] for j in range(len(mymat))]
+
+    num_of_island = 0
+
+    def helper(mymat,cur_row,cur_col,can_explore):
+        if cur_row >= len(mymat) or cur_row < 0 or cur_col >= len(mymat[0]) or cur_col < 0 or can_explore[cur_row][cur_col] == False:
+            return
+
+        if can_explore[cur_row][cur_col] and mymat[cur_row][cur_col] == 0:
+            can_explore[cur_row][cur_col] = False
+            return
+
+        if can_explore[cur_row][cur_col] and mymat[cur_row][cur_col] == 1:
+            can_explore[cur_row][cur_col] = False
+            helper(mymat,cur_row + 1,cur_col,can_explore)
+            helper(mymat,cur_row,cur_col + 1,can_explore)
+            helper(mymat,cur_row - 1,cur_col,can_explore)
+            helper(mymat,cur_row,cur_col - 1,can_explore)
+
+    for i in range(len(mymat)):
+        for j in range(len(mymat[0])):
+            if can_explore[i][j] and mymat[i][j] == 1:
+                print i,j
+                helper(mymat,i,j,can_explore)
+                num_of_island += 1
+            else: continue
+    return num_of_island
+
+
+def surrounded_island(myMat):
+    """
+    given a 0 1 matrix, turn the surrounded 0 to 1
+    note that the 0 on boundary cannot be surrounded
+
+    similar with num_Of_island
+    :param myMat:
+    :return:
+    """
+
+def expression_operator_1(mystr,target): # has bug
+    """
+
+    :param mystr: given a string of numbers and the expression result of target
+    output : list of valid expressions, expression could be linked by +,-
+    :param target:
+    :return:
+    it is similar with the 99 cents problem
+    for every recursion/level, we know the current val and res = target - cur
+    """
+    mylist = list(mystr)
+    if len(mystr) < 1:
+        return
+    result = []
+    def helper(mylist,level,curResult,cur_base,result,target):
+        # basecase:
+        if level == len(mylist):
+            if target == 0:
+                result.append(list(curResult))
+                return
+            else:
+                return
+
+        # recursion
+        for i in range(level):
+            cur_left_cut = int(''.join(mylist[:i + 1]))
+            cur_right_cut = int(''.join(mylist[i + 1:level]))
+
+    return [''.join(x) for x in result]
+
+def expression_operator_2(mystr,target): # has bug
+    """
+
+    :param mystr: given a string of numbers and the expression result of target
+    output : list of valid expressions, expression could be linked by +,-,*
+    :param target:
+    :return:
+    it is similar with the 99 cents problem
+    for every recursion/level, we know the current val and res = target - cur
+    """
+    mylist = list(mystr)
+    if len(mystr) < 1:
+        return
+    result = []
+    def helper(mylist,level,curResult,cur_base,result,target):
+        # basecase:
+        if level == len(mylist):
+            if target == 0:
+                result.append(list(curResult))
+                return
+            else:
+                return
+
+        # recursion
+        for i in range(level):
+            cur_left_cut = int(''.join(mylist[:i + 1]))
+            cur_right_cut = int(''.join(mylist[i + 1:level]))
+
+    return [''.join(x) for x in result]
+
+
+def course_schedule(n,prereq_list):
+    """
+    find whether it is possible for taking all courses given prerequisite
+    [2,[0,1]], possible
+    2,[[0,1],[1,0]] impossible
+
+    the course and prerequisite was given as graph edge, we need to find whether there is a cycle in the given graph
+    if no cycle, then possible, otherwise impossible
+
+    bfs: using a list of n to save number of pre-requisite of each courses
+        create a queue to save courses does not requie prerequisite
+        while len(queue) != 0:
+            cur_course = pop queue
+            iterate all courses to see if there is courses has pre-requsite is cur_courses: if so, reduce the number of
+            prerequisite courses for current iterating course by 1, if after reducing, the prerequiiste couse is 0,
+            then number of no prerequisite +=1
+        finally judge if number of no prerequisite is n
+
+    dfs: set up a visit flag, 0 is not explored, 1 is that course is possible to take , otherwise -1
+        build a dict: key: course i, val: list of its prerequisite
+        for i in range(n):
+            run dfs(map, visit, i) => if return true means possible to take i and false: impossible
+
+
+    :param n:
+    :param couresList:
+    :return:
+    time: O(n + n + len(prereq))
+    """
+    if len(prereq_list) < 1:
+        return True
+
+    # build a dict:
+    mydict = {}
+    visit = [0] * n
+    for item in prereq_list:
+        if item[0] in mydict:
+            mydict[item[0]].append(item[1])
+        else:
+            mydict[item[0]] = [item[1]]
+
+    # create helper:
+    def helper(thedict, visitList,i):
+        if visitList[i] == -1:
+            return False
+        if visitList[i] == 1:
+            return True
+        visit[i] = -1
+        if i in thedict:
+            for j in thedict[i]:
+                if helper(thedict, visitList,j):
+                    continue
+                else:
+                    return False
+        visitList[i] = 1
+        return True
+    # starting dfs
+    for i in range(n):
+        if helper(mydict,visit,i) == False:
+            return False
+    return True
 
 
 if __name__ == "__main__":
+
     myCostMat = [[0,1,0,0,1,0],[1,0,1,0,1,0],[0,1,0,1,0,0],[0,0,1,0,10,1],[0,0,0,1,0,0]]
     root = GraphNode()
     node1 = GraphNode()

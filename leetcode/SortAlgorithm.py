@@ -9,14 +9,14 @@ def swap(mylist, a, b):
 
 
 def selection_sort(mylist):
-    # at each iteration, find the global minimum
-    for i in range(0,len(mylist)):
-        globalMinPos = i
-        for j in range(i+1,len(mylist)):
-            if(mylist[j] < mylist[globalMinPos]):
-                globalMinPos = j
-        swap(mylist,i,globalMinPos)
+    if len(mylist) < 2 :
+        return
+    for i in range(len(mylist)):
+        for j in range(i + 1, len(mylist)):
+            if mylist[j] < mylist[i]:
+                mylist[i],mylist[j] = mylist[j],mylist[i]
     return mylist
+
 
 def merge_sort(mylist):
     if len(mylist) < 2:

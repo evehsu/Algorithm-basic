@@ -700,17 +700,63 @@ def num_of_island(mymat):
     return num_of_island
 
 
-def surrounded_island(myMat):
+def surrounded_region(myMat):
     """
     given a 0 1 matrix, turn the surrounded 0 to 1
     note that the 0 on boundary cannot be surrounded
 
-    similar with num_Of_island
+    similar with num_Of_island with the approach of traversal the matrix
+    solution:
+    step1 find the connect 0 with boarder and mark then as 2 => dfs
+    step2 scan the matrix, change 0 to 1 and change 2 to 0
+    return new matrix
+
+    time: o(m*n)
+
     :param myMat:
     :return:
     """
+    can_explore = [[True for i in range(len(myMat[0]))] for j in range(len(myMat))]
 
-def expression_operator_1(mystr,target): # has bug
+    def helper(myMat,cur_row,cur_col, can_explore):
+        if cur_row >= len(myMat) or cur_col >= len(myMat[0]) or cur_row < 0 or cur_col < 0 or can_explore[cur_row][cur_col] == False:
+            return
+        if myMat[cur_row][cur_col] == 1:
+            can_explore[cur_row][cur_col] == False
+            return
+        if myMat[cur_row][cur_col] == 0:
+            can_explore[cur_row][cur_col] == False
+            myMat[cur_row][cur_col] = 2
+            helper(myMat,cur_row + 1,cur_col,can_explore)
+            helper(myMat,cur_row,cur_col + 1,can_explore)
+            helper(myMat,cur_row - 1,cur_col,can_explore)
+            helper(myMat,cur_row,cur_col - 1,can_explore)
+
+    # dfs not on all matrix, but only on the boarder of the matrix
+    for j in range(len(myMat[0])):
+        if can_explore[0][j] and myMat[0][j] == 0:
+            helper(myMat,0,j,can_explore)
+        if can_explore[len(myMat) - 1][j] and myMat[len(myMat) - 1][j] == 0:
+            helper(myMat,len(myMat) - 1,j,can_explore)
+    for i in range(len(myMat)):
+        if can_explore[i][0] and myMat[i][0] == 0:
+            helper(myMat,i,0,can_explore)
+        if can_explore[i][len(myMat[0]) - 1] and myMat[i][len(myMat[0]) - 1] == 0:
+            helper(myMat,i,len(myMat[0]) - 1,can_explore)
+
+    # scan the matrix again
+    for i in range(len(myMat)):
+        for j in range(len(myMat[0])):
+            if myMat[i][j] == 1:
+                continue
+            elif myMat[i][j] == 0:
+                myMat[i][j] = 1
+            else: # myMat[i][j] == 2
+                myMat[i][j] = 0
+    return myMat
+
+
+def expression_operator_1(mystr,target):
     """
 
     :param mystr: given a string of numbers and the expression result of target
@@ -719,14 +765,22 @@ def expression_operator_1(mystr,target): # has bug
     :return:
     it is similar with the 99 cents problem
     for every recursion/level, we know the current val and res = target - cur
+    for every step we need to save
+    1. cur_num: mylist[level]
+    2. prev: before including cur_num, the value of the expression
+    3. the operator 1) + 2) - 3) space (which means, 1 2 =  12)
+
+    time complexity O(3^n) => 3 splits with n level (+,-,join)
     """
-    mylist = list(mystr)
     if len(mystr) < 1:
         return
+
     result = []
-    def helper(mylist,level,curResult,cur_base,result,target):
+
+    def helper(myStr,level,prev,curResult,result,target):
         # basecase:
-        if level == len(mylist):
+        print level,prev,curResult,target
+        if level == len(myStr):
             if target == 0:
                 result.append(list(curResult))
                 return
@@ -734,9 +788,20 @@ def expression_operator_1(mystr,target): # has bug
                 return
 
         # recursion
-        for i in range(level):
-            cur_left_cut = int(''.join(mylist[:i + 1]))
-            cur_right_cut = int(''.join(mylist[i + 1:level]))
+        for i in range(1,len(myStr) - level + 1):
+            cur_num = int(myStr[level:level+i])
+            if len(curResult) == 0:
+                curResult.append(myStr[level:level+i])
+                helper(myStr,level + i, prev + cur_num,curResult,result,target - cur_num)
+                curResult.pop()
+            else:
+                curResult.append(str("+" + myStr[level:level+i]))
+                helper(myStr,level + i, prev + cur_num,curResult,result,target - cur_num)
+                curResult.pop()
+                curResult.append(str("-" + myStr[level:level+i]))
+                helper(myStr,level + i, prev - cur_num,curResult,result,target + cur_num)
+                curResult.pop()
+    helper(mystr, 0, 0, [], result, target)
 
     return [''.join(x) for x in result]
 
@@ -749,14 +814,22 @@ def expression_operator_2(mystr,target): # has bug
     :return:
     it is similar with the 99 cents problem
     for every recursion/level, we know the current val and res = target - cur
+    for every step we need to save
+    1. cur_num: mylist[level]
+    2. prev: before including cur_num, the value of the expression
+    3. the operator 1) + 2) - 3) space (which means, 1 2 =  12)
+
+    time complexity O(4^n) => 3 splits with n level (+,-,*,join)
     """
-    mylist = list(mystr)
     if len(mystr) < 1:
         return
+
     result = []
-    def helper(mylist,level,curResult,cur_base,result,target):
+
+    def helper(myStr,level,prev,curResult,result,target):
         # basecase:
-        if level == len(mylist):
+        print level,prev,curResult,target
+        if level == len(myStr):
             if target == 0:
                 result.append(list(curResult))
                 return
@@ -764,9 +837,20 @@ def expression_operator_2(mystr,target): # has bug
                 return
 
         # recursion
-        for i in range(level):
-            cur_left_cut = int(''.join(mylist[:i + 1]))
-            cur_right_cut = int(''.join(mylist[i + 1:level]))
+        for i in range(1,len(myStr) - level + 1):
+            cur_num = int(myStr[level:level+i])
+            if len(curResult) == 0:
+                curResult.append(myStr[level:level+i])
+                helper(myStr,level + i, prev + cur_num,curResult,result,target - cur_num)
+                curResult.pop()
+            else:
+                curResult.append(str("+" + myStr[level:level+i]))
+                helper(myStr,level + i, prev + cur_num,curResult,result,target - cur_num)
+                curResult.pop()
+                curResult.append(str("-" + myStr[level:level+i]))
+                helper(myStr,level + i, prev - cur_num,curResult,result,target + cur_num)
+                curResult.pop()
+    helper(mystr, 0, 0, [], result, target)
 
     return [''.join(x) for x in result]
 

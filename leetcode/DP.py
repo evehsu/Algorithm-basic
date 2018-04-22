@@ -94,6 +94,30 @@ def bestBuyStock_twice_optimize(mylist):
     return final[-1]
 
 
+def climbing_stairs(n):
+    """
+    given n stairs, we could take either 1 or 2 steps every time
+    how many distinct ways to reach top
+    induction rule
+    d[n] = d[n-1] + d[n-2]
+    d[0] = 0 useless
+    d[1] = 1
+    d[2] = 2
+    """
+    if n < 1:
+        return
+    if n == 1:
+        return 1
+    if n == 2:
+        return 2
+    tmp1 = 1
+    tmp2 = 2
+    for i in range(3,n + 1):
+        cur = tmp1 + tmp2
+        tmp1,tmp2 = tmp2,cur
+    return cur
+
+
 def longest_ascending_subarray(mystr):
     mylist = list(mystr)
     global_max = 0
@@ -347,7 +371,26 @@ def dict_find_word(mystr,mydict):
             for j in range(i,0,-1):
                 if m[j-1] and ''.join(mystrlist[j:i+1]) in mydict:
                     m[i] = True
+                    break
     return m[-1]
+
+
+def coin_change(coins,amount):
+    """
+    given a list of coins, find the min # of coins that need to reach the given amount
+    using dp
+    dp[i] is min # of coins to reach amount i
+    basecase dp[i] = 1 if i in coins
+    induction rule dp[i] = min(dp[i-j]) + 1 for j in coins
+    """
+    d = [float("inf")] * (amount + 1)
+    for j in coins:
+        d[j] = 1
+        for i in range(j,amount + 1):
+            d[i] = min(d[i],d[i-j] + 1)
+    if d[-1] == float("inf"):
+        d[-1] = -1
+    return d[-1]
 
 
 """
@@ -436,6 +479,7 @@ def min_cut_palindome(myStr):
         for i in range(0,length/2):
             if mylist[i] != mylist[len(mylist) -1 -i]:
                 init = False
+                break
         return init
     m[0] = 0
     m[1] = 0 if mylist[0] == mylist[1] else 1

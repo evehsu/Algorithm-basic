@@ -348,7 +348,7 @@ def find_1st_nonDup_char(myStr):
     return -1
 
 
-def longest_common_prefix(listOfStr):
+def longest_common_prefix(listofstr):
     """
     givena list of str, get the longest common prefix for those strs
     :param
@@ -359,16 +359,20 @@ def longest_common_prefix(listOfStr):
 
             if come across something different, stop and return
     """
-    listOflist = [list(x) for x in listOfStr]
-    min_len = float("inf")
-    for idx,item in enumerate(listOfStr):
-        min_len = min(min_len,len(item))
-    for i in range(min_len):
-        cur_char = listOflist[0][i]
-        for j in range(len(listOflist)):
-            if listOflist[j][i] != cur_char:
-                return listOflist[0][:i]
-    return listOflist[0][:min_len]
+    minlen = float("inf")
+    for i in range(len(listofstr)):
+        minlen = min(minlen,len(listofstr[i]))
+    result = []
+    for j in range(minlen):
+        cur_char = listofstr[0][j]
+        for k in range(1,len(listofstr)):
+            if listofstr[k][j] != cur_char:
+                break
+        result.append(cur_char)
+    return ''.join(result)
+
+
+
 
 
 def longest_common_substr(str1, str2):
